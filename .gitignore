@@ -1,0 +1,7 @@
+*.swp
+*.pyc
+crispy_models.egg-info/*
+**/__pycache__/*
+.cache/*
+.coverage
+htmlcov/*
