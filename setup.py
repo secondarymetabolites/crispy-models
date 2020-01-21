@@ -18,6 +18,10 @@ tests_require = [
     "pytest-cov",
 ]
 
+package_require = [
+    "twine",
+]
+
 setup(name='crispy-models',
     version=version,
     install_requires=install_requires,
@@ -41,5 +45,6 @@ setup(name='crispy-models',
     ],
     extras_require={
         'testing': tests_require,
+        'packaging': package_require,
     },
 )
