@@ -7,7 +7,7 @@ def read(fname):
 long_description = read('README.md')
 
 version_py = os.path.join('crispy_models', 'version.py')
-version = read(version_py).strip().split('=')[-1].replace("'", "")
+version = read(version_py).split('=')[-1].replace("'", "").strip()
 
 # No requirements so far
 install_requires = []

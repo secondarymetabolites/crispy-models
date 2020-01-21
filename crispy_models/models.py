@@ -16,7 +16,6 @@ class Session(object):
         else:
             self._create(from_id, from_file)
 
-
     def _create(self, from_id, from_file):
         "create a new Session object"
         if from_id is None and from_file is None:
@@ -50,7 +49,6 @@ class Session(object):
 
         self._db.hmset(self._session_key, session)
 
-
     def _load_from_db(self, session_id):
         "load an existing session from the database"
         self._session_id = session_id
@@ -58,12 +56,10 @@ class Session(object):
         if not self._db.exists(self._session_key):
             raise ValueError("No session with ID {}".format(session_id))
 
-
     def _update_timestamp(self):
         "update the timestamp with the current time"
         now = datetime.utcnow().strftime(self._timefmt)
         self._db.hset(self._session_key, 'last_changed', now)
-
 
     @property
     def state(self):
@@ -74,7 +70,6 @@ class Session(object):
         self._update_timestamp()
         self._db.hset(self._session_key, 'state', value)
 
-
     @property
     def error(self):
         return self._db.hget(self._session_key, 'error')
@@ -84,7 +79,6 @@ class Session(object):
         self._update_timestamp()
         self._db.hset(self._session_key, 'error', value)
 
-
     @property
     def asid(self):
         return self._db.hget(self._session_key, 'asid')
@@ -93,7 +87,6 @@ class Session(object):
     def asid(self, value):
         self._update_timestamp()
         self._db.hset(self._session_key, 'asid', value)
-
 
     @property
     def filename(self):
@@ -105,21 +98,17 @@ class Session(object):
         self._update_timestamp()
         self._db.hset(self._session_key, 'filename', value)
 
-
     @property
     def added(self):
         return self._db.hget(self._session_key, 'added')
-
 
     @property
     def last_changed(self):
         return self._db.hget(self._session_key, 'last_changed')
 
-
     @property
     def last_changed_datetime(self):
         return datetime.strptime(self._db.hget(self._session_key, 'last_changed'), self._timefmt)
-
 
     @property
     def genome(self):
@@ -130,7 +119,6 @@ class Session(object):
         self._update_timestamp()
         self._db.hset(self._session_key, 'genome', json.dumps(value))
 
-
     @property
     def from_coord(self):
         return int(self._db.hget(self._session_key, 'from'))
@@ -139,7 +127,6 @@ class Session(object):
     def from_coord(self, value):
         self._update_timestamp()
         self._db.hset(self._session_key, 'from', value)
-
 
     @property
     def to_coord(self):
@@ -150,7 +137,6 @@ class Session(object):
         self._update_timestamp()
         self._db.hset(self._session_key, 'to', value)
 
-
     @property
     def region(self):
         return json.loads(self._db.hget(self._session_key, 'region'))
@@ -159,7 +145,6 @@ class Session(object):
     def region(self, value):
         self._update_timestamp()
         self._db.hset(self._session_key, 'region', json.dumps(value))
-
 
     @property
     def derived(self):
@@ -171,7 +156,6 @@ class Session(object):
             raise ValueError('{} is not a boolean value'.format(value))
         self._db.hset(self._session_key, 'derived', json.dumps(value))
 
-
     @property
     def pam(self):
         return self._db.hget(self._session_key, 'pam')
@@ -181,7 +165,6 @@ class Session(object):
         self._update_timestamp()
         self._db.hset(self._session_key, 'pam', value)
 
-
     @property
     def uniq_size(self):
         return int(self._db.hget(self._session_key, 'uniq_size'))
@@ -190,7 +173,6 @@ class Session(object):
     def uniq_size(self, value):
         self._update_timestamp()
         self._db.hset(self._session_key, 'uniq_size', value)
-
 
     @property
     def full_size(self):
@@ -230,17 +212,14 @@ class Queue(object):
 
         self._key = 'crispy:queue:{}'.format(self.jobtype)
 
-
     @property
     def length(self):
         """Get the length of the queue"""
         return self._db.llen(self._key)
 
-
     def submit(self, job):
         """Submit a job to the queue"""
         self._db.lpush(self._key, job._session_key)
-
 
     def next(self):
         """Get the next job from the queue"""
