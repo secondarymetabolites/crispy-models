@@ -1,13 +1,17 @@
 "Data models for CRISPy API"
 
+from datetime import datetime
 import json
 import random
-from datetime import datetime
+from typing import Any, Dict, Optional, Union
+
+from redis import Redis
 
 
 class Session(object):
     """A CRISPy web session object"""
-    def __init__(self, db, from_id=None, from_file=None, session_id=None):
+    def __init__(self, db: Redis, from_id: Optional[str] = None, from_file: Optional[str] = None,
+                 session_id: Optional[int] = None):
         self._db = db
         self._timefmt = '%Y-%m-%d %H:%M:%S'
 
@@ -16,7 +20,7 @@ class Session(object):
         else:
             self._create(from_id, from_file)
 
-    def _create(self, from_id, from_file):
+    def _create(self, from_id: Optional[str], from_file: Optional[str]):
         "create a new Session object"
         if from_id is None and from_file is None:
             raise ValueError("Need either id or file to start a session")
@@ -25,7 +29,7 @@ class Session(object):
             raise ValueError("Can't set both id and file for a session")
 
         now = datetime.utcnow().strftime(self._timefmt)
-        session = {
+        session: Dict[str, Union[str, int]] = {
             'state': 'pending',
             'error': '',
             'asid': str(from_id),
@@ -47,12 +51,12 @@ class Session(object):
         self._session_id = random.getrandbits(128)
         self._session_key = 'crispy:session:{0:039d}'.format(self._session_id)
 
-        self._db.hset(self._session_key, mapping=session)
+        self._db.hset(self._session_key, mapping=session)  # type: ignore
 
-    def _load_from_db(self, session_id):
+    def _load_from_db(self, session_id: int):
         "load an existing session from the database"
         self._session_id = session_id
-        self._session_key = 'crispy:session:{0:039d}'.format(self._session_id)
+        self._session_key = f'crispy:session:{self._session_id:039d}'
         if not self._db.exists(self._session_key):
             raise ValueError("No session with ID {}".format(session_id))
 
@@ -62,8 +66,10 @@ class Session(object):
         self._db.hset(self._session_key, 'last_changed', now)
 
     @property
-    def state(self):
-        return self._db.hget(self._session_key, 'state')
+    def state(self) -> str:
+        ret = self._db.hget(self._session_key, 'state')
+        assert ret
+        return ret
 
     @state.setter
     def state(self, value):
@@ -71,8 +77,10 @@ class Session(object):
         self._db.hset(self._session_key, 'state', value)
 
     @property
-    def error(self):
-        return self._db.hget(self._session_key, 'error')
+    def error(self) -> str:
+        ret = self._db.hget(self._session_key, 'error')
+        assert ret is not None
+        return ret
 
     @error.setter
     def error(self, value):
@@ -80,8 +88,11 @@ class Session(object):
         self._db.hset(self._session_key, 'error', value)
 
     @property
-    def asid(self):
-        return self._db.hget(self._session_key, 'asid')
+    def asid(self) -> Optional[str]:
+        asid = self._db.hget(self._session_key, 'asid')
+        if not asid:
+            return None
+        return asid if asid != "None" else None
 
     @asid.setter
     def asid(self, value):
@@ -89,9 +100,11 @@ class Session(object):
         self._db.hset(self._session_key, 'asid', value)
 
     @property
-    def filename(self):
+    def filename(self) -> Optional[str]:
         name = self._db.hget(self._session_key, 'filename')
-        return name if name != 'None' else None
+        if not name:
+            return None
+        return name if name != "None" else None
 
     @filename.setter
     def filename(self, value):
@@ -99,20 +112,28 @@ class Session(object):
         self._db.hset(self._session_key, 'filename', value)
 
     @property
-    def added(self):
-        return self._db.hget(self._session_key, 'added')
+    def added(self) -> str:
+        ret = self._db.hget(self._session_key, 'added')
+        assert ret
+        return ret
 
     @property
-    def last_changed(self):
-        return self._db.hget(self._session_key, 'last_changed')
+    def last_changed(self) -> str:
+        ret = self._db.hget(self._session_key, 'last_changed')
+        assert ret
+        return ret
 
     @property
-    def last_changed_datetime(self):
-        return datetime.strptime(self._db.hget(self._session_key, 'last_changed'), self._timefmt)
+    def last_changed_datetime(self) -> datetime:
+        ret = self._db.hget(self._session_key, 'last_changed')
+        assert ret
+        return datetime.strptime(ret, self._timefmt)
 
     @property
-    def genome(self):
-        return json.loads(self._db.hget(self._session_key, 'genome'))
+    def genome(self) -> Dict[str, Any]:
+        ret = self._db.hget(self._session_key, 'genome')
+        assert ret
+        return json.loads(ret)
 
     @genome.setter
     def genome(self, value):
@@ -120,8 +141,10 @@ class Session(object):
         self._db.hset(self._session_key, 'genome', json.dumps(value))
 
     @property
-    def from_coord(self):
-        return int(self._db.hget(self._session_key, 'from'))
+    def from_coord(self) -> int:
+        ret = self._db.hget(self._session_key, 'from')
+        assert ret
+        return int(ret)
 
     @from_coord.setter
     def from_coord(self, value):
@@ -129,8 +152,10 @@ class Session(object):
         self._db.hset(self._session_key, 'from', value)
 
     @property
-    def to_coord(self):
-        return int(self._db.hget(self._session_key, 'to'))
+    def to_coord(self) -> int:
+        ret = self._db.hget(self._session_key, 'to')
+        assert ret
+        return int(ret)
 
     @to_coord.setter
     def to_coord(self, value):
@@ -138,8 +163,10 @@ class Session(object):
         self._db.hset(self._session_key, 'to', value)
 
     @property
-    def region(self):
-        return json.loads(self._db.hget(self._session_key, 'region'))
+    def region(self) -> Dict[str, Any]:
+        ret = self._db.hget(self._session_key, 'region')
+        assert ret
+        return json.loads(ret)
 
     @region.setter
     def region(self, value):
@@ -147,8 +174,10 @@ class Session(object):
         self._db.hset(self._session_key, 'region', json.dumps(value))
 
     @property
-    def derived(self):
-        return json.loads(self._db.hget(self._session_key, 'derived'))
+    def derived(self) -> bool:
+        ret = self._db.hget(self._session_key, 'derived')
+        assert ret
+        return json.loads(ret)
 
     @derived.setter
     def derived(self, value):
@@ -157,8 +186,10 @@ class Session(object):
         self._db.hset(self._session_key, 'derived', json.dumps(value))
 
     @property
-    def pam(self):
-        return self._db.hget(self._session_key, 'pam')
+    def pam(self) -> str:
+        ret = self._db.hget(self._session_key, 'pam')
+        assert ret
+        return ret
 
     @pam.setter
     def pam(self, value):
@@ -166,8 +197,10 @@ class Session(object):
         self._db.hset(self._session_key, 'pam', value)
 
     @property
-    def uniq_size(self):
-        return int(self._db.hget(self._session_key, 'uniq_size'))
+    def uniq_size(self) -> int:
+        ret = self._db.hget(self._session_key, 'uniq_size')
+        assert ret
+        return int(ret)
 
     @uniq_size.setter
     def uniq_size(self, value):
@@ -175,8 +208,10 @@ class Session(object):
         self._db.hset(self._session_key, 'uniq_size', value)
 
     @property
-    def full_size(self):
-        return int(self._db.hget(self._session_key, 'full_size'))
+    def full_size(self) -> int:
+        ret = self._db.hget(self._session_key, 'full_size')
+        assert ret
+        return int(ret)
 
     @full_size.setter
     def full_size(self, value):
@@ -184,8 +219,10 @@ class Session(object):
         self._db.hset(self._session_key, 'full_size', value)
 
     @property
-    def best_size(self):
-        return int(self._db.hget(self._session_key, 'best_size'))
+    def best_size(self) -> int:
+        ret = self._db.hget(self._session_key, 'best_size')
+        assert ret
+        return int(ret)
 
     @best_size.setter
     def best_size(self, value):
@@ -193,8 +230,10 @@ class Session(object):
         self._db.hset(self._session_key, 'best_size', value)
 
     @property
-    def best_offset(self):
-        return int(self._db.hget(self._session_key, 'best_offset'))
+    def best_offset(self) -> int:
+        ret = self._db.hget(self._session_key, 'best_offset')
+        assert ret
+        return int(ret)
 
     @best_offset.setter
     def best_offset(self, value):
@@ -205,15 +244,15 @@ class Session(object):
 class Queue(object):
     """A queue for CRISPy-related jobs"""
 
-    def __init__(self, db, jobtype):
+    def __init__(self, db: Redis, jobtype: str):
         """Initialize a job queue"""
         self._db = db
         self.jobtype = jobtype
 
-        self._key = 'crispy:queue:{}'.format(self.jobtype)
+        self._key = f'crispy:queue:{self.jobtype}'
 
     @property
-    def length(self):
+    def length(self) -> int:
         """Get the length of the queue"""
         return self._db.llen(self._key)
 
@@ -221,6 +260,6 @@ class Queue(object):
         """Submit a job to the queue"""
         self._db.lpush(self._key, job._session_key)
 
-    def next(self):
+    def next(self) -> str:
         """Get the next job from the queue"""
         return self._db.rpop(self._key)

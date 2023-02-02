@@ -32,6 +32,7 @@ setup(name='crispy-models',
     long_description=long_description,
     long_description_content_type='text/markdown',
     packages=['crispy_models'],
+    package_data={"crispy_models": ["py.typed"]},
     url='https://github.com/secondarymetabolites/crispy-models/',
     license='GNU Affero General Public License',
     classifiers=[
