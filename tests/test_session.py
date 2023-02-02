@@ -5,8 +5,8 @@ from crispy_models import Session
 
 @pytest.fixture
 def db():
-    from mockredis import mock_redis_client
-    return mock_redis_client(decode_responses=True)
+    from fakeredis import FakeRedis
+    return FakeRedis(encoding="utf-8", decode_responses=True)
 
 
 @pytest.fixture
@@ -30,7 +30,7 @@ def fake_session(db):
             'uniq_size': 13,
             'full_size': 23,
         }
-        db.hmset(session_key, db_session)
+        db.hset(session_key, mapping=db_session)
         return db_session
 
     return setup

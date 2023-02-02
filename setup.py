@@ -13,7 +13,7 @@ version = read(version_py).split('=')[-1].replace("'", "").strip()
 install_requires = []
 
 tests_require = [
-    "mockredispy-kblin",
+    "fakeredis",
     "pytest",
     "pytest-cov",
 ]

@@ -5,8 +5,8 @@ from crispy_models import Queue, Session
 @pytest.fixture
 def db():
     """fake redis database"""
-    from mockredis import mock_redis_client
-    return mock_redis_client(decode_responses=True)
+    from fakeredis import FakeRedis
+    return FakeRedis(encoding="utf-8", decode_responses=True)
 
 
 def test_init(db):

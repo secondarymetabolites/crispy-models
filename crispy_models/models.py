@@ -47,7 +47,7 @@ class Session(object):
         self._session_id = random.getrandbits(128)
         self._session_key = 'crispy:session:{0:039d}'.format(self._session_id)
 
-        self._db.hmset(self._session_key, session)
+        self._db.hset(self._session_key, mapping=session)
 
     def _load_from_db(self, session_id):
         "load an existing session from the database"
