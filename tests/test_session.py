@@ -35,6 +35,7 @@ def fake_session(db):
 
     return setup
 
+
 def test_init(db):
     now = datetime.utcnow()
     session = Session(db, from_id='testid')
@@ -76,17 +77,17 @@ def test_init_from_id(db, fake_session):
 
 def test_init_from_invalid_id(db):
     with pytest.raises(ValueError):
-        session = Session(db, session_id=172342)
+        Session(db, session_id=172342)
 
 
 def test_init_without_id_or_file(db):
     with pytest.raises(ValueError):
-        session = Session(db)
+        Session(db)
 
 
 def test_init_with_bot_id_and_file(db):
     with pytest.raises(ValueError):
-        session = Session(db, from_id=12345, from_file='test')
+        Session(db, from_id=12345, from_file='test')
 
 
 def test_state(db):
