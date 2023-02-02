@@ -14,6 +14,8 @@ install_requires = []
 
 tests_require = [
     "fakeredis",
+    "flake8",
+    "mypy",
     "pytest",
     "pytest-cov",
 ]
